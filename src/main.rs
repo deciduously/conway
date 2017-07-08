@@ -1,4 +1,6 @@
-const SIZE: usize = 3;
+use std::{thread, time};
+
+const SIZE: usize = 9;
 
 type World = [[bool; SIZE]; SIZE];
 
@@ -32,11 +34,11 @@ fn get_cell(c: &Coord, w: &World) -> bool {
 
 //moore_sum takes a Coord and a World and
 //returns the sum of live cells in the given point's Moore neighborhood
-fn moore_sum(c: &Coord, w: &World) -> u32 {
+fn moore_sum(c: &Coord, w: &World) -> u8 {
     if c.x >= SIZE || c.y >= SIZE {
         panic!("Coord not in World! moore_sum");
     };
-    //collect all cells here
+    //collect all cells here, returning false for cells past the boundary
     let neighborhood = [
         if c.x > 0 && c.y > 0 {
             get_cell(&Coord { x: c.x - 1, y: c.y - 1 }, w)
@@ -81,9 +83,8 @@ fn moore_sum(c: &Coord, w: &World) -> u32 {
     ];
 
     //return total of live cells
-    //TODO: i feel like there's a better way to express this
     neighborhood.iter().fold(
-        0u32,
+        0u8,
         |sum, &val| if &val == &true {
             sum + 1
         } else {
@@ -98,8 +99,8 @@ fn tick_cell(c: &Coord, w: &World) -> bool {
     if get_cell(c, w) {
         match s {
             0 | 1 => false, //lonely
-            2 | 3 => true, //overcrowded
-            _ => false, //ALIVE
+            2 | 3 => true, //ALIVE
+            _ => false, //overcrowded
         }
     } else {
         match s {
@@ -120,15 +121,28 @@ fn tick_world(w: &World) -> World {
     ret
 }
 
+fn advance_and_show(w: &World) -> World {
+    let next = tick_world(w);
+    show_world(&next);
+    thread::sleep(time::Duration::from_millis(500));
+    next
+}
+
 fn main() {
-    let blinker = [
-        [false, false, false],
-        [true, true, true],
-        [false, false, false],
+    let glider = [
+        [false, false, true, false, false, false, false, false, false],
+        [false, false, false, true, false, false, false, false, false],
+        [false, true, true, true, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
+        [false, false, false, false, false, false, false, false, false],
     ];
-    show_world(&blinker);
-    println!();
-    show_world(&tick_world(&blinker));
-    println!();
-    show_world(&tick_world(&tick_world(&blinker)));
+    show_world(&glider);
+    let mut current = glider;
+    loop {
+        current = advance_and_show(&current);
+    };
 }

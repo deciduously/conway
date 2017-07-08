@@ -1,2 +1,2 @@
 # Conway's Game of Life
-WIP
+Loops forever - use ctrl-c to end.
