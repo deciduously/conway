@@ -15,9 +15,10 @@ struct Coord {
 fn show_world(w: &World) {
     for row in w.iter() {
         for cell in row.iter() {
-            match cell {
-                &false => print!(" . "),
-                &true => print!(" X "),
+            if *cell {
+                print!(" X ")
+            } else {
+               print! (" . ")
             }
         }
         println!("");
@@ -85,7 +86,7 @@ fn moore_sum(c: &Coord, w: &World) -> u8 {
     //return total of live cells
     neighborhood.iter().fold(
         0u8,
-        |sum, &val| if &val == &true {
+        |sum, &val| if val {
             sum + 1
         } else {
             sum
@@ -98,7 +99,6 @@ fn tick_cell(c: &Coord, w: &World) -> bool {
     let s = moore_sum(c, w);
     if get_cell(c, w) {
         match s {
-            0 | 1 => false, //lonely
             2 | 3 => true, //ALIVE
             _ => false, //overcrowded
         }
@@ -129,6 +129,7 @@ fn advance_and_show(w: &World) -> World {
 }
 
 fn main() {
+    //TODO read from file,set world size accordingly
     let glider = [
         [false, false, true, false, false, false, false, false, false],
         [false, false, false, true, false, false, false, false, false],
@@ -143,6 +144,7 @@ fn main() {
     show_world(&glider);
     let mut current = glider;
     loop {
+        //TODO quit if no change
         current = advance_and_show(&current);
     };
 }
